@@ -1,5 +1,5 @@
 "use strict";
-
+require("dotenv").config();
 /**
  * An asynchronous bootstrap function that runs before
  * your application gets started.
@@ -9,6 +9,9 @@
  *
  * See more details here: https://strapi.io/documentation/3.0.0-beta.x/concepts/configurations.html#bootstrap
  */
+const fs = require("fs");
+const path = require("path");
+const { articles, categories } = require("../../seed/seed");
 
 const findPublicRole = async () => {
   const result = await strapi
@@ -26,7 +29,7 @@ const setDefaultPermissions = async () => {
     permissions.map(p =>
       strapi
         .query("permission", "users-permissions")
-        .update({ id: p.id }, { enabled: true })
+        .update({ id: p.id }, { enabled: false })
     )
   );
 };
@@ -42,9 +45,50 @@ const isFirstRun = async () => {
   return !initHasRun;
 };
 
+const getFilesizeInBytes = filepath => {
+  var stats = fs.statSync(filepath);
+  var fileSizeInBytes = stats["size"];
+  return fileSizeInBytes;
+};
+
+const createSeedData = async () => {
+  const categoriesPromises = categories.map(({ ...rest }) => {
+    return strapi.services.category.create({
+      ...rest
+    });
+  });
+  const articlesPromises = articles.map(article => {
+    const { imageFileName, mimeType, ...rest } = article;
+    const filepath = path.join(
+      strapi.config.seed.path,
+      `/images/${imageFileName}`
+    );
+    const size = getFilesizeInBytes(filepath);
+    const image = {
+      path: filepath,
+      name: imageFileName,
+      size,
+      type: mimeType
+    };
+    const files = {
+      image
+    };
+    return strapi.services.article.create(
+      {
+        author: null,
+        ...rest
+      },
+      { files }
+    );
+  });
+  await Promise.all(categoriesPromises);
+  await Promise.all(articlesPromises);
+};
+
 module.exports = async () => {
   const shouldSetDefaultPermissions = await isFirstRun();
   if (shouldSetDefaultPermissions) {
     await setDefaultPermissions();
+    await createSeedData();
   }
 };
