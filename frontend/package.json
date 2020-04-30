@@ -27,7 +27,7 @@
     "apollo-link": "^1.2.11",
     "graphql": "^14.5.0",
     "graphql-tag": "^2.10.0",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "ngx-markdown": "^8.2.1",
     "rxjs": "~6.4.0",
     "tslib": "^1.10.0",
