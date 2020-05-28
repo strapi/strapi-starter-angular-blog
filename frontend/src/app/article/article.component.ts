@@ -4,6 +4,8 @@ import gql from "graphql-tag";
 import ARTICLE_QUERY from "../apollo/queries/article/article";
 import { ActivatedRoute } from "@angular/router";
 import { Subscription } from "rxjs";
+import { AppComponent } from '../app.component';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: "app-article",
@@ -14,6 +16,7 @@ export class ArticleComponent implements OnInit {
   data: any = {};
   loading = true;
   errors: any;
+  apiURL = environment.apiURL;
 
   private queryArticle: Subscription;
 
