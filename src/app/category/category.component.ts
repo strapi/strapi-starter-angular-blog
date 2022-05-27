@@ -3,7 +3,6 @@ import { Apollo } from "apollo-angular";
 import {CATEGORY_ARTICLES_QUERY, CategoryArticlesResponse, CategoryArticlesType} from '../apollo/queries/category/articles';
 import { ActivatedRoute, ParamMap } from "@angular/router";
 import { Subscription } from "rxjs";
-import {GraphQLError} from 'graphql';
 import {environment} from '../../environments/environment';
 
 @Component({
@@ -15,7 +14,6 @@ export class CategoryComponent implements OnInit, OnDestroy {
   data: { articles: CategoryArticlesType[], category: {name: string} };
   category: { name: string };
   loading = true;
-  errors: GraphQLError[] = [];
   leftArticlesCount: number;
   leftArticles: CategoryArticlesType[];
   rightArticles: CategoryArticlesType[];
@@ -45,7 +43,6 @@ export class CategoryComponent implements OnInit, OnDestroy {
             this.data.articles.length
           );
           this.loading = result.loading;
-          this.errors = [...(result.errors || [])];
         });
     });
   }

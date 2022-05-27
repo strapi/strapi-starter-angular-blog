@@ -1,15 +1,10 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { GraphQLModule } from './graphql.module';
-import { HttpClientModule } from '@angular/common/http';
-
 import { MarkdownModule } from "ngx-markdown";
-
 import { RouterModule, Routes } from "@angular/router";
-
 import { NavComponent } from "./nav/nav.component";
 import { ArticlesComponent } from "./articles/articles.component";
 import { ArticleComponent } from "./article/article.component";
@@ -34,8 +29,7 @@ const appRoutes: Routes = [
     RouterModule.forRoot(appRoutes, { enableTracing: false }),
     BrowserModule,
     AppRoutingModule,
-    GraphQLModule,
-    HttpClientModule
+    GraphQLModule
   ],
   providers: [],
   bootstrap: [AppComponent]

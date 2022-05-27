@@ -11,7 +11,6 @@ import { Subscription } from "rxjs";
 export class NavComponent implements OnInit, OnDestroy {
   categories: { id: number, name: string }[] = [];
   loading = true;
-  errors: any;
 
   private queryCategories: Subscription;
 
@@ -20,10 +19,10 @@ export class NavComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.queryCategories = this.apollo
       .watchQuery<CategoriesResponse>({query: CATEGORIES_QUERY})
-      .valueChanges.subscribe(result => {
+      .valueChanges
+      .subscribe(result => {
         this.categories = result.data.categories.data.map(category => ({id: category.id, name: category.attributes.name}));
         this.loading = result.loading;
-        this.errors = result.errors;
       });
   }
   ngOnDestroy() {

@@ -1,4 +1,4 @@
-import gql from "graphql-tag";
+import {gql} from 'apollo-angular';
 import {FRAGMENT_MEDIA} from './components/media';
 import {FRAGMENT_RICHTEXT} from './components/richtext';
 import {FRAGMENT_SLIDER} from './components/slider';

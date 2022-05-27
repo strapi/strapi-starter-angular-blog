@@ -3,8 +3,7 @@ import { Apollo } from "apollo-angular";
 import {ARTICLE_QUERY, ArticleResponse, ArticleType} from '../apollo/queries/article/article';
 import { ActivatedRoute } from "@angular/router";
 import { Subscription } from "rxjs";
-import { environment } from '../../environments/environment';
-import {GraphQLError} from 'graphql';
+import {environment} from '../../environments/environment';
 
 @Component({
   selector: "app-article",
@@ -14,8 +13,6 @@ import {GraphQLError} from 'graphql';
 export class ArticleComponent implements OnInit, OnDestroy {
   article: ArticleType;
   loading = true;
-  errors: GraphQLError[] = [];
-  apiURL = environment.apiURL;
 
   private queryArticle: Subscription;
 
@@ -32,7 +29,6 @@ export class ArticleComponent implements OnInit, OnDestroy {
       .valueChanges.subscribe(result => {
         this.article = this.transformApiResponse(result.data);
         this.loading = result.loading;
-        this.errors = [...(result.errors || [])];
       });
   }
   ngOnDestroy() {
@@ -44,7 +40,10 @@ export class ArticleComponent implements OnInit, OnDestroy {
         id: data.article.data.id,
         title: data.article.data.attributes.title,
         category: {...data.article.data.attributes.category.data.attributes},
-        cover: {...data.article.data.attributes.cover.data.attributes},
+        cover: {
+          ...data.article.data.attributes.cover.data.attributes,
+          url: `${environment.apiURL}${data.article.data.attributes.cover.data.attributes.url}`
+        },
     };
   }
 }

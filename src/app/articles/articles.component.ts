@@ -1,7 +1,6 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import { Apollo } from "apollo-angular";
 import { Subscription } from "rxjs";
-import {GraphQLError} from 'graphql';
 import {ARTICLES_QUERY, ArticlesResponse, ArticlesType} from '../apollo/queries/article/articles';
 
 @Component({
@@ -12,7 +11,6 @@ import {ARTICLES_QUERY, ArticlesResponse, ArticlesType} from '../apollo/queries/
 export class ArticlesComponent implements OnInit, OnDestroy {
   data: { articles: ArticlesType[] } = {articles: []};
   loading = true;
-  errors: GraphQLError[] = [];
   leftArticlesCount: number;
   leftArticles: ArticlesType[];
   rightArticles: ArticlesType[];
@@ -23,7 +21,9 @@ export class ArticlesComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.queryArticles = this.apollo
-      .watchQuery<ArticlesResponse>({query: ARTICLES_QUERY}).valueChanges.subscribe(result => {
+      .watchQuery<ArticlesResponse>({query: ARTICLES_QUERY})
+      .valueChanges
+      .subscribe(result => {
         this.data = this.transformApiResponse(result.data);
         this.leftArticlesCount = Math.ceil(this.data.articles.length / 5);
         this.leftArticles = this.data.articles.slice(0, this.leftArticlesCount);
@@ -32,7 +32,6 @@ export class ArticlesComponent implements OnInit, OnDestroy {
           this.data.articles.length
         );
         this.loading = result.loading;
-        this.errors = [...(result.errors || [])];
       });
   }
 

@@ -1,4 +1,4 @@
-import gql from "graphql-tag";
+import {gql} from 'apollo-angular';
 
 export const CATEGORY_ARTICLES_QUERY = gql`
 query Category($id: ID!) {

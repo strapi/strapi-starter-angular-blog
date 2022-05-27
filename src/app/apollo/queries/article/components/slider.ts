@@ -1,4 +1,4 @@
-import gql from 'graphql-tag';
+import {gql} from 'apollo-angular';
 
 export const FRAGMENT_SLIDER = gql`
 fragment Slider on ComponentSharedSlider {
