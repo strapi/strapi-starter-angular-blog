@@ -1,21 +1,20 @@
-import { Component, OnInit } from "@angular/core";
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import { Apollo } from "apollo-angular";
-import gql from "graphql-tag";
-import ARTICLE_QUERY from "../apollo/queries/article/article";
+import {ARTICLE_QUERY, ArticleResponse, ArticleType} from '../apollo/queries/article/article';
 import { ActivatedRoute } from "@angular/router";
 import { Subscription } from "rxjs";
-import { AppComponent } from '../app.component';
 import { environment } from '../../environments/environment';
+import {GraphQLError} from 'graphql';
 
 @Component({
   selector: "app-article",
   templateUrl: "./article.component.html",
   styleUrls: ["./article.component.css"]
 })
-export class ArticleComponent implements OnInit {
-  data: any = {};
+export class ArticleComponent implements OnInit, OnDestroy {
+  article: ArticleType;
   loading = true;
-  errors: any;
+  errors: GraphQLError[] = [];
   apiURL = environment.apiURL;
 
   private queryArticle: Subscription;
@@ -24,19 +23,28 @@ export class ArticleComponent implements OnInit {
 
   ngOnInit() {
     this.queryArticle = this.apollo
-      .watchQuery({
+      .watchQuery<ArticleResponse>({
         query: ARTICLE_QUERY,
         variables: {
-          id: this.route.snapshot.paramMap.get("id")
+          id: this.route.snapshot.paramMap.get('id')
         }
       })
       .valueChanges.subscribe(result => {
-        this.data = result.data;
+        this.article = this.transformApiResponse(result.data);
         this.loading = result.loading;
-        this.errors = result.errors;
+        this.errors = [...(result.errors || [])];
       });
   }
   ngOnDestroy() {
     this.queryArticle.unsubscribe();
+  }
+
+  private transformApiResponse(data: ArticleResponse): ArticleType {
+    return {
+        id: data.article.data.id,
+        title: data.article.data.attributes.title,
+        category: {...data.article.data.attributes.category.data.attributes},
+        cover: {...data.article.data.attributes.cover.data.attributes},
+    };
   }
 }

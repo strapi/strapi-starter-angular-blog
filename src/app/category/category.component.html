@@ -1,6 +1,6 @@
 <div class="uk-section">
   <div class="uk-container uk-container-large">
-    <h1>{{ category }}</h1>
+    <h1>{{ category?.name }}</h1>
 
     <div class="uk-child-width-1-2" uk-grid>
       <div>
@@ -11,10 +11,10 @@
           class="uk-link-reset"
         >
           <div class="uk-card uk-card-muted">
-            <div *ngIf="article.image" class="uk-card-media-top">
+            <div *ngIf="article.cover" class="uk-card-media-top">
               <img
-                src="http://localhost:1337{{ article.image.url }}"
-                alt=""
+                [src]="article.cover.url"
+                [alt]="article.cover.alternativeText || ''"
                 height="100"
               />
             </div>
@@ -40,10 +40,10 @@
             class="uk-link-reset"
           >
             <div class="uk-card uk-card-muted">
-              <div *ngIf="article.image" class="uk-card-media-top">
+              <div *ngIf="article.cover" class="uk-card-media-top">
                 <img
-                  src="http://localhost:1337{{ article.image.url }}"
-                  alt=""
+                  [src]="article.cover.url"
+                  [alt]="article.cover.alternativeText || ''"
                   height="100"
                 />
               </div>

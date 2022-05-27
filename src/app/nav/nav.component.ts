@@ -1,7 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import { Apollo } from "apollo-angular";
-import gql from "graphql-tag";
-import CATEGORIES_QUERY from "../apollo/queries/category/categories";
+import {CATEGORIES_QUERY, CategoriesResponse} from '../apollo/queries/category/categories';
 import { Subscription } from "rxjs";
 
 @Component({
@@ -9,8 +8,8 @@ import { Subscription } from "rxjs";
   templateUrl: './nav.component.html',
   styleUrls: ['./nav.component.css']
 })
-export class NavComponent implements OnInit {
-  data: any = {};
+export class NavComponent implements OnInit, OnDestroy {
+  categories: { id: number, name: string }[] = [];
   loading = true;
   errors: any;
 
@@ -20,11 +19,9 @@ export class NavComponent implements OnInit {
 
   ngOnInit() {
     this.queryCategories = this.apollo
-      .watchQuery({
-        query: CATEGORIES_QUERY
-      })
+      .watchQuery<CategoriesResponse>({query: CATEGORIES_QUERY})
       .valueChanges.subscribe(result => {
-        this.data = result.data;
+        this.categories = result.data.categories.data.map(category => ({id: category.id, name: category.attributes.name}));
         this.loading = result.loading;
         this.errors = result.errors;
       });

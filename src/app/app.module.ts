@@ -31,7 +31,7 @@ const appRoutes: Routes = [
   ],
   imports: [
     MarkdownModule.forRoot(),
-    RouterModule.forRoot(appRoutes, { enableTracing: true }),
+    RouterModule.forRoot(appRoutes, { enableTracing: false }),
     BrowserModule,
     AppRoutingModule,
     GraphQLModule,

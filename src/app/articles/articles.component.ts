@@ -1,21 +1,21 @@
-import { Component, OnInit } from "@angular/core";
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import { Apollo } from "apollo-angular";
-import gql from "graphql-tag";
-import ARTICLES_QUERY from "../apollo/queries/article/articles";
 import { Subscription } from "rxjs";
+import {GraphQLError} from 'graphql';
+import {ARTICLES_QUERY, ArticlesResponse, ArticlesType} from '../apollo/queries/article/articles';
 
 @Component({
   selector: "app-articles",
   templateUrl: "./articles.component.html",
   styleUrls: ["./articles.component.css"]
 })
-export class ArticlesComponent implements OnInit {
-  data: any = {};
+export class ArticlesComponent implements OnInit, OnDestroy {
+  data: { articles: ArticlesType[] } = {articles: []};
   loading = true;
-  errors: any;
-  leftArticlesCount: any;
-  leftArticles: any[];
-  rightArticles: any[];
+  errors: GraphQLError[] = [];
+  leftArticlesCount: number;
+  leftArticles: ArticlesType[];
+  rightArticles: ArticlesType[];
 
   private queryArticles: Subscription;
 
@@ -23,11 +23,8 @@ export class ArticlesComponent implements OnInit {
 
   ngOnInit() {
     this.queryArticles = this.apollo
-      .watchQuery({
-        query: ARTICLES_QUERY
-      })
-      .valueChanges.subscribe(result => {
-        this.data = result.data;
+      .watchQuery<ArticlesResponse>({query: ARTICLES_QUERY}).valueChanges.subscribe(result => {
+        this.data = this.transformApiResponse(result.data);
         this.leftArticlesCount = Math.ceil(this.data.articles.length / 5);
         this.leftArticles = this.data.articles.slice(0, this.leftArticlesCount);
         this.rightArticles = this.data.articles.slice(
@@ -35,11 +32,24 @@ export class ArticlesComponent implements OnInit {
           this.data.articles.length
         );
         this.loading = result.loading;
-        this.errors = result.errors;
+        this.errors = [...(result.errors || [])];
       });
   }
 
   ngOnDestroy() {
     this.queryArticles.unsubscribe();
+  }
+
+  private transformApiResponse(data: ArticlesResponse): { articles: ArticlesType[] } {
+    return {
+      articles: data.articles.data.map(article => {
+        return {
+          id: article.id,
+          title: article.attributes.title,
+          category: { name: article.attributes.category.data.attributes.name },
+          image: { url: article.attributes.cover.data.attributes.url }
+        };
+      })
+    };
   }
 }

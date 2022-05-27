@@ -1,15 +1,12 @@
 <div
+  *ngIf="article"
   id="banner"
   class="uk-height-small uk-flex uk-flex-center uk-flex-middle uk-background-cover uk-light uk-padding"
-  [style.background-image]="
-    'url(' + (data.article.image.url.startsWith('/'))
-    ? apiURL + data.article.image.url
-    : data.article.image.url + ')'
-  "
+  [style.background-image]="'url(' + article.cover.url  + ')'"
   uk-img
 >
 
-  <h1>{{ data.article.title }}</h1>
+  <h1>{{ article.title }}</h1>
 
 </div>
 
@@ -17,7 +14,7 @@
   <div class="uk-container uk-container-small">
     <p>
       <markdown ngPreserveWhitespaces>
-        {{ data.article.content }}
+<!--        {{ article?.content }}-->
       </markdown>
     </p>
     <p></p>
