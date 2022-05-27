@@ -1,12 +1,10 @@
 # Strapi Starter Angular Blog
 
-> **Warning :warning:**
->
-> This starter relies on the **[strapi/strapi-legacy-blog](https://github.com/strapi/strapi-legacy-blog)** repository, which is deprecated.
-
 Angular starter for creating a blog with Strapi.
 
 This starter allows you to try Strapi with Angular with the example of a simple blog. It is fully customizable and due to the fact that it is open source, fully open to contributions. Do not hesitate to add new features etc ...
+
+This starter uses the [Strapi blog template](https://github.com/strapi/starters-and-templates/tree/main/packages/templates/blog)
 
 You may want to know how to develop such a starter by your own! This starter is actually the result of this [tutorial](https://strapi.io/blog/build-a-blog-with-angular-js-strapi-and-apollo)
 
@@ -30,7 +28,7 @@ Pages:
 
 **Backend**
 
-See full instructions [here](https://github.com/strapi/strapi-legacy-blog)
+See full instructions [here](https://github.com/strapi/starters-and-templates/tree/main/packages/templates/blog)
 
 **Frontend**
 
