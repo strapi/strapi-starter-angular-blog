@@ -1,13 +1,13 @@
 <div class="uk-section">
   <div class="uk-container uk-container-large">
-    <h1>{{ category?.name }}</h1>
+    <h1>{{ (state$ | async).category.name }}</h1>
 
     <div class="uk-child-width-1-2" uk-grid>
       <div>
         <a
+          *ngFor="let article of (state$ | async).articles.left"
           routerLink="/article/{{ article.id }}"
           routerLinkActive="active"
-          *ngFor="let article of leftArticles"
           class="uk-link-reset"
         >
           <div class="uk-card uk-card-muted">
@@ -16,6 +16,7 @@
                 [src]="article.cover.url"
                 [alt]="article.cover.alternativeText || ''"
                 height="100"
+                loading="lazy"
               />
             </div>
             <div class="uk-card-body">
@@ -36,7 +37,7 @@
           <a
             routerLink="/article/{{ article.id }}"
             routerLinkActive="active"
-            *ngFor="let article of rightArticles"
+            *ngFor="let article of  (state$ | async).articles.right"
             class="uk-link-reset"
           >
             <div class="uk-card uk-card-muted">
@@ -45,6 +46,7 @@
                   [src]="article.cover.url"
                   [alt]="article.cover.alternativeText || ''"
                   height="100"
+                  loading="lazy"
                 />
               </div>
               <div class="uk-card-body">

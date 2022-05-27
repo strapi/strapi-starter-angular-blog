@@ -1,4 +1,5 @@
 import {gql} from 'apollo-angular';
+import {environment} from '../../../../environments/environment';
 
 export const ARTICLES_QUERY = gql`
  query Articles {
@@ -59,7 +60,19 @@ export interface ArticlesType {
     category: {
         name: string;
     };
-    image: {
+    cover: {
         url: string
     };
+}
+
+export function articlesTypeFromResponse(response: ArticlesResponse): ArticlesType[] {
+    return response.articles.data.map(({id, attributes}) => ({
+        id,
+        title: attributes.title,
+        category: attributes.category.data.attributes,
+        cover: {
+            ...attributes.cover.data.attributes,
+            url: environment.apiURL + attributes.cover.data.attributes.url
+        }
+    }));
 }

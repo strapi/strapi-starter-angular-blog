@@ -1,0 +1,4 @@
+<figure>
+    <img [src]="media.url" [alt]="media.alternativeText || ''" loading="lazy">
+    <figcaption *ngIf="media.caption"> {{ media.caption }}</figcaption>
+</figure>

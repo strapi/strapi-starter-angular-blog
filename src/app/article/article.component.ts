@@ -1,49 +1,35 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import { Apollo } from "apollo-angular";
-import {ARTICLE_QUERY, ArticleResponse, ArticleType} from '../apollo/queries/article/article';
-import { ActivatedRoute } from "@angular/router";
-import { Subscription } from "rxjs";
-import {environment} from '../../environments/environment';
+import {ChangeDetectionStrategy, Component } from '@angular/core';
+import {Apollo} from 'apollo-angular';
+import {ARTICLE_QUERY, ArticleResponse, ArticleType, articleTypeFromResponse} from '../apollo/queries/article/article';
+import {ActivatedRoute, ParamMap} from '@angular/router';
+import {map, merge, Observable, of, switchMap} from 'rxjs';
 
 @Component({
   selector: "app-article",
   templateUrl: "./article.component.html",
-  styleUrls: ["./article.component.css"]
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ArticleComponent implements OnInit, OnDestroy {
-  article: ArticleType;
-  loading = true;
+export class ArticleComponent {
 
-  private queryArticle: Subscription;
+  article$: Observable<ArticleType>;
 
-  constructor(private apollo: Apollo, private route: ActivatedRoute) {}
+  constructor(private apollo: Apollo, private route: ActivatedRoute) {
+    // when the route changes, we rerun the query
+    const onIdParamsChange$ = this.route.paramMap.
+    pipe(
+      map((params: ParamMap) => parseInt(params.get("id"), 0))
+    );
 
-  ngOnInit() {
-    this.queryArticle = this.apollo
-      .watchQuery<ArticleResponse>({
-        query: ARTICLE_QUERY,
-        variables: {
-          id: this.route.snapshot.paramMap.get('id')
-        }
+    this.article$ = onIdParamsChange$.pipe(
+      switchMap(id => {
+        return this.apollo.watchQuery<ArticleResponse>({query: ARTICLE_QUERY,variables: {id}})
+          .valueChanges
+          .pipe(
+            map(result => articleTypeFromResponse(result.data)),
+          )
       })
-      .valueChanges.subscribe(result => {
-        this.article = this.transformApiResponse(result.data);
-        this.loading = result.loading;
-      });
-  }
-  ngOnDestroy() {
-    this.queryArticle.unsubscribe();
-  }
+    )
 
-  private transformApiResponse(data: ArticleResponse): ArticleType {
-    return {
-        id: data.article.data.id,
-        title: data.article.data.attributes.title,
-        category: {...data.article.data.attributes.category.data.attributes},
-        cover: {
-          ...data.article.data.attributes.cover.data.attributes,
-          url: `${environment.apiURL}${data.article.data.attributes.cover.data.attributes.url}`
-        },
-    };
+    this.article$ = merge(this.article$, of({id: -1, cover: {}, title: '', blocks: []} as ArticleType));
   }
 }

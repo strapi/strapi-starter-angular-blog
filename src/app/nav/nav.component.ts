@@ -1,31 +1,20 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import { Apollo } from "apollo-angular";
-import {CATEGORIES_QUERY, CategoriesResponse} from '../apollo/queries/category/categories';
-import { Subscription } from "rxjs";
+import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {Apollo} from 'apollo-angular';
+import {CATEGORIES_QUERY, CategoriesResponse, categoriesTypeFromResponse, CategoryType} from '../apollo/queries/category/categories';
+import {map, Observable} from 'rxjs';
 
 @Component({
   selector: 'app-nav',
   templateUrl: './nav.component.html',
-  styleUrls: ['./nav.component.css']
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NavComponent implements OnInit, OnDestroy {
-  categories: { id: number, name: string }[] = [];
-  loading = true;
+export class NavComponent {
+  categories$: Observable<CategoryType[]>;
 
-  private queryCategories: Subscription;
-
-  constructor(private apollo: Apollo) {}
-
-  ngOnInit() {
-    this.queryCategories = this.apollo
+  constructor(private apollo: Apollo) {
+    this.categories$ = this.apollo
       .watchQuery<CategoriesResponse>({query: CATEGORIES_QUERY})
       .valueChanges
-      .subscribe(result => {
-        this.categories = result.data.categories.data.map(category => ({id: category.id, name: category.attributes.name}));
-        this.loading = result.loading;
-      });
-  }
-  ngOnDestroy() {
-    this.queryCategories.unsubscribe();
+      .pipe(map(result => categoriesTypeFromResponse(result.data)));
   }
 }

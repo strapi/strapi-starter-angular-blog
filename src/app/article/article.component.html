@@ -1,22 +1,23 @@
-<div
-  *ngIf="article"
-  id="banner"
-  class="uk-height-small uk-flex uk-flex-center uk-flex-middle uk-background-cover uk-light uk-padding"
-  [style.background-image]="'url(' + article.cover.url  + ')'"
-  uk-img
->
+<ng-container *ngIf="(article$ | async).id > 0">
+    <div
+      id="banner"
+      class="uk-height-small uk-flex uk-flex-center uk-flex-middle uk-background-cover uk-light uk-padding"
+      [style.background-image]="'url(' + (article$ | async).cover.url  + ')'"
+      uk-img
+    >
 
-  <h1>{{ article.title }}</h1>
+      <h1>{{ (article$ | async).title }}</h1>
 
-</div>
+    </div>
 
-<div class="uk-section">
-  <div class="uk-container uk-container-small">
-    <p>
-      <markdown ngPreserveWhitespaces>
-<!--        {{ article?.content }}-->
-      </markdown>
-    </p>
-    <p></p>
-  </div>
-</div>
+    <div class="uk-section">
+      <div class="uk-container uk-container-small" *ngFor="let block of (article$ | async).blocks">
+        <ng-container [ngSwitch]="block.__typename">
+            <app-media *ngSwitchCase="'ComponentSharedMedia'" [media]="block"></app-media>
+            <app-richtext *ngSwitchCase="'ComponentSharedRichText'" [text]="block"></app-richtext>
+            <app-quote *ngSwitchCase="'ComponentSharedQuote'" [quote]="block"></app-quote>
+            <app-slider *ngSwitchCase="'ComponentSharedSlider'" [slider]="block"></app-slider>
+        </ng-container>
+      </div>
+    </div>
+</ng-container>

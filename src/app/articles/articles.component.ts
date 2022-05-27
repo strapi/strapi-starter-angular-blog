@@ -1,54 +1,34 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import { Apollo } from "apollo-angular";
-import { Subscription } from "rxjs";
-import {ARTICLES_QUERY, ArticlesResponse, ArticlesType} from '../apollo/queries/article/articles';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {Apollo} from 'apollo-angular';
+import {map, merge, Observable, of} from 'rxjs';
+import {ARTICLES_QUERY, ArticlesResponse, ArticlesType, articlesTypeFromResponse} from '../apollo/queries/article/articles';
 
 @Component({
   selector: "app-articles",
   templateUrl: "./articles.component.html",
-  styleUrls: ["./articles.component.css"]
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ArticlesComponent implements OnInit, OnDestroy {
-  data: { articles: ArticlesType[] } = {articles: []};
-  loading = true;
-  leftArticlesCount: number;
-  leftArticles: ArticlesType[];
-  rightArticles: ArticlesType[];
+export class ArticlesComponent {
+  articles$: Observable<{
+    left: ArticlesType[];
+    right: ArticlesType[];
+  }>;
 
-  private queryArticles: Subscription;
-
-  constructor(private apollo: Apollo) {}
-
-  ngOnInit() {
-    this.queryArticles = this.apollo
+  constructor(private apollo: Apollo) {
+    this.articles$ = this.apollo
       .watchQuery<ArticlesResponse>({query: ARTICLES_QUERY})
       .valueChanges
-      .subscribe(result => {
-        this.data = this.transformApiResponse(result.data);
-        this.leftArticlesCount = Math.ceil(this.data.articles.length / 5);
-        this.leftArticles = this.data.articles.slice(0, this.leftArticlesCount);
-        this.rightArticles = this.data.articles.slice(
-          this.leftArticlesCount,
-          this.data.articles.length
-        );
-        this.loading = result.loading;
-      });
-  }
+      .pipe(
+        map(result => articlesTypeFromResponse(result.data)),
+        map(articles => {
+          const leftArticlesCount = Math.ceil(articles.length / 5);
+          return {
+            left: articles.slice(0, leftArticlesCount),
+            right: articles.slice(leftArticlesCount, articles.length)
+          };
+        })
+      );
 
-  ngOnDestroy() {
-    this.queryArticles.unsubscribe();
-  }
-
-  private transformApiResponse(data: ArticlesResponse): { articles: ArticlesType[] } {
-    return {
-      articles: data.articles.data.map(article => {
-        return {
-          id: article.id,
-          title: article.attributes.title,
-          category: { name: article.attributes.category.data.attributes.name },
-          image: { url: article.attributes.cover.data.attributes.url }
-        };
-      })
-    };
+    this.articles$ = merge(this.articles$, of({left: [], right: []}));
   }
 }

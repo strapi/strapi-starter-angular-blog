@@ -23,3 +23,15 @@ export interface CategoriesResponse {
         }[];
     };
 }
+
+export interface CategoryType {
+    id: number;
+    name: string;
+}
+
+export function categoriesTypeFromResponse(response: CategoriesResponse): CategoryType[] {
+    return response.categories.data.map(category => ({
+        id: category.id,
+        name: category.attributes.name
+    }));
+}

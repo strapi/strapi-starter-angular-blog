@@ -1,0 +1,5 @@
+<ngx-slick-carousel class="carousel" [config]="slickOptions">
+    <div ngxSlickItem *ngFor="let media of slider.files" class="slide">
+        <img [src]="media.url" [alt]="media.alternativeText || ''" loading="lazy">
+    </div>
+</ngx-slick-carousel>

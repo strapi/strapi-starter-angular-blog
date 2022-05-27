@@ -25,7 +25,9 @@
     "graphql": "^16.5.0",
     "jquery": "^3.6.0",
     "ngx-markdown": "^13.0.0",
+    "ngx-slick-carousel": "^0.6.0",
     "rxjs": "~7.4.0",
+    "slick-carousel": "^1.8.1",
     "tslib": "^2.0.0",
     "uikit": "^3.2.4",
     "zone.js": "~0.11.4"

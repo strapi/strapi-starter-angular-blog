@@ -1,69 +1,57 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import { Apollo } from "apollo-angular";
-import {CATEGORY_ARTICLES_QUERY, CategoryArticlesResponse, CategoryArticlesType} from '../apollo/queries/category/articles';
-import { ActivatedRoute, ParamMap } from "@angular/router";
-import { Subscription } from "rxjs";
-import {environment} from '../../environments/environment';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {Apollo} from 'apollo-angular';
+import {
+  CATEGORY_ARTICLES_QUERY,
+  CategoryArticlesResponse,
+  CategoryArticlesType,
+  categoryArticlesTypeFromResponse
+} from '../apollo/queries/category/articles';
+import {ActivatedRoute, ParamMap} from '@angular/router';
+import {map, merge, Observable, of, switchMap} from 'rxjs';
 
 @Component({
   selector: "app-category",
   templateUrl: "./category.component.html",
-  styleUrls: ["./category.component.css"]
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CategoryComponent implements OnInit, OnDestroy {
-  data: { articles: CategoryArticlesType[], category: {name: string} };
-  category: { name: string };
-  loading = true;
-  leftArticlesCount: number;
-  leftArticles: CategoryArticlesType[];
-  rightArticles: CategoryArticlesType[];
-  id: number;
+export class CategoryComponent {
+  state$: Observable<{
+    category: { name: string },
+    articles: {
+      left: CategoryArticlesType[],
+      right: CategoryArticlesType[]
+    }
+  }>;
 
-  private queryCategoriesArticles: Subscription;
+  constructor(private apollo: Apollo, private route: ActivatedRoute) {
+    // when the route changes, we rerun the query
+    const onIdParamsChange$ = this.route.paramMap.
+      pipe(
+        map((params: ParamMap) => parseInt(params.get("id"),0))
+      );
 
-  constructor(private apollo: Apollo, private route: ActivatedRoute) {}
+    // On Each ID params change.
+    this.state$ = onIdParamsChange$.pipe(switchMap(id => {
+      // we run the GraphQL query
+      return this.apollo.watchQuery<CategoryArticlesResponse>({query: CATEGORY_ARTICLES_QUERY,variables: {id}})
+        .valueChanges
+        .pipe(
+          // Then we map the response to the type we want
+          map(result => categoryArticlesTypeFromResponse(result.data)),
+          map(state => {
+            // and finally split in left/right.
+            const leftArticlesCount = Math.ceil(state.articles.length / 5);
+            return {
+              category: state.category,
+              articles: {
+                left: state.articles.slice(0, leftArticlesCount),
+                right: state.articles.slice(leftArticlesCount, state.articles.length)
+              }
+            }
+          })
+        );
+    }))
 
-  ngOnInit() {
-    this.route.paramMap.subscribe((params: ParamMap) => {
-      this.id = parseInt(params.get('id'), 0);
-      this.queryCategoriesArticles = this.apollo
-        .watchQuery<CategoryArticlesResponse>({
-          query: CATEGORY_ARTICLES_QUERY,
-          variables: {
-            id: this.id
-          }
-        })
-        .valueChanges.subscribe(result => {
-          this.data = this.transformApiResponse(result.data);
-          this.category = this.data.category;
-          this.leftArticlesCount = Math.ceil(this.data.articles.length / 5);
-          this.leftArticles = this.data.articles.slice(0, this.leftArticlesCount);
-          this.rightArticles = this.data.articles.slice(
-            this.leftArticlesCount,
-            this.data.articles.length
-          );
-          this.loading = result.loading;
-        });
-    });
-  }
-  ngOnDestroy() {
-    this.queryCategoriesArticles.unsubscribe();
-  }
-
-  private transformApiResponse(data: CategoryArticlesResponse): { articles: CategoryArticlesType[], category: {name: string} } {
-    return {
-      category: { name: data.category.data.attributes.name },
-      articles: data.category.data.attributes.articles.data.map(article => {
-        return {
-          id: article.id,
-          title: article.attributes.title,
-          category: { name: article.attributes.category.data.attributes.name },
-          cover: {
-            url: environment.apiURL + article.attributes.cover.data.attributes.url,
-            alternativeText: article.attributes.cover.data.attributes.alternativeText
-          },
-        };
-      })
-    };
+    this.state$ = merge(this.state$, of({category: {name: ''}, articles: {left: [], right: []}}));
   }
 }
